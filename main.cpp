@@ -15,6 +15,10 @@
 #include "Camera.h"
 #include "Color.h"
 #include "Light.h"
+#include "Object.h"
+#include "Sphere.h"
+#include "Plane.h"
+
 
 
 
@@ -104,6 +108,7 @@ int main(int argc, char *argv[])
 	int n = width * height;
 	RGBType *pixels = new RGBType[n];
 
+	Vect O (0,0,0);
 	Vect X (1,0,0);
 	Vect Y (0,1,0);
 	Vect Z (0,0,1);
@@ -121,11 +126,16 @@ int main(int argc, char *argv[])
 
 	Color white_light (1.0, 1.0, 1.0, 0.0);
 	Color pretty_green (0.5, 1.0, 0.5, 0.3);
+	Color maroon (0.5, 0.25 , 0.25, 0.0);
 	Color gray (0.5, 0.5, 0.5, 0.0);
 	Color black (0.0,0.0,0.0, 0.0);
 
 	Vect light_position (-7,10, -10);
 	Light scene_light ( light_position, white_light);
+
+	// scene objects
+	Sphere scene_sphere (O, 1, pretty_green);
+	Plane scene_plane (Y, -1, maroon);
 
 
 

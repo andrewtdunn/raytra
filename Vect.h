@@ -41,12 +41,12 @@ class Vect{
 					x*v.getVectY() - y * v.getVectX() );
 	}
 
-	Vect add (Vect v){
+	Vect vectAdd (Vect v){
 		return Vect (x + v.getVectX(), y + v.getVectY(), z + v.getVectZ());
 	}
 
-	Vect multiply (Vect v){
-		return Vect (x * v.getVectX(), y * v.getVectY(), z * v.getVectZ());
+	Vect vectMult (double scalar){
+		return Vect (x * scalar, y * scalar, z * scalar);
 	}
 
 };
