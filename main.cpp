@@ -96,7 +96,59 @@ void savebmp(const char *filename, int w, int h, int dpi, RGBType *data){
 
 }
 
+int winningObjectIndex(vector<double> object_intersections){
+	//return the index of the winning intersection
+	int index_of_minimum_value;
+
+	// prevent unnecessary calculations
+	if (object_intersections.size() == 0) {
+		// if there are no intersections
+		return -1;
+	}
+	else if (object_intersections.size() == 1){
+		if ( object_intersections.at(0) > 0){
+			// if that intersection is greater than zero then its
+			// our index of min value
+			return 0;
+		}
+		else{
+			// otherwise the only intersection value is negative
+			return -1;
+		}
+	}
+	else {
+		// otherwise there is more than one intersection
+		// first find the maximum value
+
+		double max = 0;
+		for (int i=0; i < object_intersections.size(); i ++){
+			if ( max < object_intersections.at(i)) {
+				max = object_intersections.at(i);
+			}
+		}
+
+		// then starting from the maximum value find the minimum 
+		// positive value
+		if (max > 0) {
+			// we only want positive intersections
+			for (int index = 0; index < object_intersections.size(); index++){
+				if (object_intersections.at(index) > 0 && object_intersections.at(index) <= max){
+					max = object_intersections.at(index);
+					index_of_minimum_value = index;
+				}
+			}
+
+			return index_of_minimum_value;
+		}
+		else {
+			// all the intersections were negative
+			return -1;
+		}
+	}
+}
+
 int thisone;
+
 
 int main(int argc, char *argv[])
 {
@@ -107,6 +159,8 @@ int main(int argc, char *argv[])
 	int height = 480;
 	int n = width * height;
 	RGBType *pixels = new RGBType[n];
+
+	double aspectRatio = (double)width/(double)height;
 
 	Vect O (0,0,0);
 	Vect X (1,0,0);
@@ -138,10 +192,49 @@ int main(int argc, char *argv[])
 	Plane scene_plane (Y, -1, maroon);
 
 
+	vector<Object*> scene_objects;
+	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere));
+	scene_objects.push_back(dynamic_cast<Object*>(&scene_plane));
+
+	double xamnt, yamnt;
+
 
 	for (int x=0; x < width; x++){
 		for (int y=0; y<height; y++){
 			thisone = y * width + x;
+
+			// start with no anti-aliasing
+			// creates centered rectangular image plane
+			if (width > height) {
+				// the image is wider than it is tall
+				xamnt = ( (x + 0.5)/width) * aspectRatio - (((width-height)/(double)height)/2);
+				yamnt = ( (height - y ) + 0.5)/height;
+			}
+			else if (height > width){
+				// the image is taller than it is wide
+				xamnt = (x + 0.5)/width;
+				yamnt = (((height - y) + 0.5 )/ height)/aspectRatio - (((height - width)/(double)width)/2);
+			}
+			else 
+			{
+				// the image is square
+				xamnt = (x + 0.5)/width;
+				yamnt = (( height - y ) + 0.5);
+			}
+
+
+			Vect cam_ray_origin = scene_cam.getCameraPosition(); // returns camera's origin
+			Vect cam_ray_direction = camdir.vectAdd(camright.vectMult(xamnt - 0.5).vectAdd(camdown.vectMult(yamnt - 0.5))).normalize();
+			Ray cam_ray (cam_ray_origin, cam_ray_direction);
+			// goes through specific x,y pixel into scene to look for intersection
+
+			vector<double> intersections;
+
+			for (int index = 0; index < scene_objects.size(); index++){
+				intersections.push_back(scene_objects.at(index)->findIntersection(cam_ray));
+			}
+
+			int index_of_winning_object = winningObjectIndex(intersections);
 
 			if ( ( x > 200 && x < 440 ) && ( y > 200 && y < 280) ){
 				pixels[thisone].r = 23;
