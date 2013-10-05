@@ -21,21 +21,21 @@ class Sphere : public Object{
 	// method functions
 	Vect getSphereCenter () { return center; }
 	double getSphereRadius () { return radius; }
-	Color getSphereColor () { return color; }
+	virtual Color getColor () { return color; }
 
-	Vect getNormal(Vect point){
+	virtual Vect getNormalAt(Vect point){
 		// normal always points away from the center of a sphere
 		Vect normal_Vect = point.vectAdd(center.negative()).normalize();
 		return normal_Vect;
 	}
 
-	double findIntersection(Ray ray){
+	virtual double findIntersection(Ray ray){
 		Vect ray_origin = ray.getRayOrigin();
 		double ray_origin_x = ray_origin.getVectX();
 		double ray_origin_y = ray_origin.getVectY();
 		double ray_origin_z = ray_origin.getVectZ();
 
-		Vect ray_direction = ray.getRayOrigin();
+		Vect ray_direction = ray.getRayDirection();
 		double ray_direction_x = ray_direction.getVectX();
 		double ray_direction_y = ray_direction.getVectY();
 		double ray_direction_z = ray_direction.getVectZ();
@@ -45,7 +45,10 @@ class Sphere : public Object{
 		double sphere_center_y = sphere_center.getVectY();
 		double sphere_center_z = sphere_center.getVectZ();
 
+		
+
 		double a = 1; // normalized 
+		
 		double b = (  2 * ( ray_origin_x - sphere_center_x ) * ray_direction_x ) 
 				+  (  2 * ( ray_origin_y - sphere_center_y ) * ray_direction_y ) 
 				+  (  2 * ( ray_origin_z - sphere_center_z ) * ray_direction_z ); 

@@ -21,13 +21,13 @@ class Plane : public Object{
 	// method functions
 	Vect getPlaneNormal () { return normal; }
 	double getPlaneDistance () { return distance; }
-	Color getPlaneColor () { return color; }
+	virtual Color getColor () { return color; }
 
-	Vect getNormalAt (Vect point){
+	virtual Vect getNormalAt (Vect point){
 		return normal;
 	}
 
-	double findIntersection(Ray ray){
+	virtual double findIntersection(Ray ray){
 		Vect ray_direction = ray.getRayDirection();
 		double a = ray_direction.dotProduct(normal);
 

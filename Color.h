@@ -24,6 +24,45 @@ class Color{
 	double setColorBlue(double blueValue) { blue = blueValue; }
 	double setColorSpecial(double specialValue) { special = specialValue; }
 
+	double brightness(){
+		return (red + blue + green)/3;
+	}
+
+	Color colorScalar(double scalar){
+		return Color (red*scalar, blue*scalar, green*scalar, special);
+	}
+
+	Color colorAdd(Color color){
+		return Color (red + color.getColorRed(), blue + color.getColorBlue(), green + getColorGreen(), special);
+	}
+
+	Color colorMultiply(Color color){
+		return Color (red * color.getColorRed(), blue * color.getColorBlue(), green * getColorGreen(), special);
+	}
+
+	Color colorAverage(Color color){
+		((red + color.getColorRed())/2, (blue + color.getColorBlue())/2, (green + getColorGreen())/2, special);
+	}
+
+	Color clip(){
+		double allLight = red + green + blue;
+		double excessLight = allLight - 3;
+		if ( excessLight > 0 ){
+			red = red + excessLight * (red/allLight);
+			green = green + excessLight * (green/allLight);
+			blue = blue + excessLight * (blue/allLight);
+		}
+		if (red > 1){ red = 1; }
+		if (green > 1){ green = 1; }
+		if (blue > 1){ blue = 1; }
+
+		if (red < 0){ red = 0; }
+		if (green < 0){ green = 0; }
+		if (blue < 0){ blue = 0; }
+
+		return Color ( red, green, blue, special );
+	}
+
 };
 
 Color::Color(){
