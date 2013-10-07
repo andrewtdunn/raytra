@@ -27,8 +27,8 @@ Light::Light(){
 	color = Color (1,1,1,0);
 }
 
-Light::Light( Vect o, Color c){
-	position  = o;
+Light::Light( Vect p, Color c){
+	position  = p;
 	color = c;
 }
 

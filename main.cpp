@@ -86,7 +86,7 @@ void savebmp(const char *filename, int w, int h, int dpi, RGBType *data){
 		double green = (data[i].g) * 255;
 		double blue = (data[i].b) * 255;
 
-		unsigned char color[3] = {(int)floor(blue), (int)floor(green), (int)floor(blue)};
+		unsigned char color[3] = {(int)floor(blue), (int)floor(green), (int)floor(red)};
 
 		fwrite(color,1,3,f);
 
@@ -153,8 +153,70 @@ Color getColorAt(Vect intersection_position, Vect intersecting_ray_direction, ve
 
 	Color winning_object_color = scene_objects.at(index_of_winning_object)->getColor();
 	Vect winning_object_normal = scene_objects.at(index_of_winning_object)->getNormalAt(intersection_position);
+
+	if (winning_object_color.getColorSpecial()==2)
+	{
+		// checkered/tile floor pattern
+
+		int square = (int)floor(intersection_position.getVectX()) 
+			+ (int)floor(intersection_position.getVectZ());
+		if ((square % 2 )==0){
+			//black tile
+			winning_object_color.setColorRed(0);
+			winning_object_color.setColorGreen(0);
+			winning_object_color.setColorBlue(0);
+		}
+		else
+		{
+			// white tile
+			winning_object_color.setColorRed(1);
+			winning_object_color.setColorGreen(1);
+			winning_object_color.setColorBlue(1);
+		}
+	}
 	
 	Color final_color = winning_object_color.colorScalar(ambientLight);
+
+	// bw 0 and 1 refers to shinyness
+	if (winning_object_color.getColorSpecial() > 0 &&
+		winning_object_color.getColorSpecial() <= 1)
+	{
+		// reflection from objects with specular intensity
+		double dot1 = winning_object_normal.dotProduct(intersecting_ray_direction.negative());
+		Vect scalar1 = winning_object_normal.vectMult(dot1);
+		Vect add1 = scalar1.vectAdd(intersecting_ray_direction);
+		Vect scalar2 = add1.vectMult(2);
+		Vect add2 = intersecting_ray_direction.negative().vectAdd(scalar2);
+		Vect reflection_direction = add2.normalize();
+
+		Ray reflection_ray (intersection_position, reflection_direction);
+		// determine what the ray intersects with first
+		vector<double> reflection_intersections;
+
+		for (int reflection_index = 0; reflection_index < scene_objects.size(); reflection_index ++)
+		{
+			reflection_intersections.push_back(scene_objects.at(reflection_index)->findIntersection(reflection_ray));
+		}
+
+		int index_of_winning_object_with_reflection = winningObjectIndex(reflection_intersections);
+
+		if (index_of_winning_object_with_reflection != -1)
+		{
+			// reflection ray missed everything else
+			if (reflection_intersections.at(index_of_winning_object_with_reflection) > accuracy)
+			{
+				// determine the position and direction at the point of intersection with 
+				// the ray only affects the color if it reflected off something
+
+				Vect reflection_intersection_position = intersection_position.vectAdd(reflection_direction.vectMult(reflection_intersections.at(index_of_winning_object_with_reflection)));
+
+				Vect reflection_intersection_ray_direction = reflection_direction;
+
+				Color reflection_intersection_color = getColorAt(reflection_intersection_position, reflection_intersection_ray_direction, scene_objects, index_of_winning_object_with_reflection, light_sources, accuracy, ambientLight);
+				final_color = final_color.colorAdd(reflection_intersection_color.colorScalar(winning_object_color.getColorSpecial()));
+			}
+		}
+	}
 
 	for (int light_index = 0; light_index < light_sources.size(); light_index++)
 	{
@@ -195,26 +257,9 @@ Color getColorAt(Vect intersection_position, Vect intersecting_ray_direction, ve
 			}
 			if(shadowed == false)
 			{
-				final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_sources.at(light_index)->getColor()).colorScalar(cosine_angle));
+				final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_sources.at(light_index)->getLightColor()).colorScalar(cosine_angle));
 
-				// bw 0 and 1 refers to shinyness
-				if ( winning_object_color.getColorSpecial() > 0 && winning_object_color.getColorSpecial() <= 1)
-				{
-					// determine reflection direction
-					double dot1 = winning_object_normal.dotProduct(intersecting_ray_direction.negative());
-					Vect scalar1 = winning_object_normal.vectMult(dot1);
-					Vect add1 = scalar1.vectAdd(intersecting_ray_direction);
-					Vect scalar2 = add1.vectMult(2);
-					Vect add2 = intersecting_ray_direction.negative().vectAdd(scalar2);
-					Vect reflection_direction = add2.normalize();
-
-					double specular = reflection_direction.dotProduct(light_direction);
-					if(specular > 0)
-					{
-						specular = pow(specular, 10);
-						final_color = final_color.colorAdd(light_sources.at(light_index)->getColor().colorScalar(specular* winning_object_color.getColorSpecial()));
-					}
-				}
+				
 			}
 		}
 	}
@@ -226,6 +271,9 @@ int main(int argc, char *argv[])
 {
 	cout << "rendering..." << endl;
 
+	clock_t t1, t2;
+	t1 = clock();
+
 	int dpi = 72;
 	int width = 640;
 	int height = 480;
@@ -234,12 +282,14 @@ int main(int argc, char *argv[])
 
 	double aspectRatio = (double)width/(double)height;
 	double ambientLight = 0.2;
-	double accuracy = 0.000001;
+	double accuracy = 0.00000001;
 
 	Vect O (0,0,0);
 	Vect X (1,0,0);
 	Vect Y (0,1,0);
 	Vect Z (0,0,1);
+
+	Vect new_sphere_location (1.75,0,0);
 
 	Vect campos(3, 1.5, -4);
 
@@ -252,11 +302,12 @@ int main(int argc, char *argv[])
 	Vect camdown = camright.crossProduct(camdir);
 	Camera scene_cam (campos, camdir, camright, camdown);
 
-	Color white_light (1.0, 1.0, 1.0, 0.0);
+	Color white_light (1.0, 1.0, 1.0, 0);
 	Color pretty_green (0.5, 1.0, 0.5, 0.3);
-	Color maroon (0.5, 0.25, 0.25, 0);
-	Color gray (0.5, 0.5, 0.5, 0.0);
-	Color black (0.0,0.0,0.0, 0.0);
+	Color maroon (0.5, 0.25, 0.25, 0.1);
+	Color tile_floor(1,1,1,2);
+	Color gray (0.5, 0.5, 0.5, 0);
+	Color black (0.0,0.0,0.0, 0);
 
 	Vect light_position (-7,10, -10);
 	Light scene_light ( light_position, white_light);
@@ -265,9 +316,11 @@ int main(int argc, char *argv[])
 
 	// scene objects
 	Sphere scene_sphere (O, 1, pretty_green);
-	Plane scene_plane (Y, -1, maroon);
+	Sphere scene_sphere2 (new_sphere_location, 0.5, maroon);
+	Plane scene_plane (Y, -1, tile_floor);
 	vector<Object*> scene_objects;
 	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere));
+	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere2));
 	scene_objects.push_back(dynamic_cast<Object*>(&scene_plane));
 
 
@@ -344,5 +397,10 @@ int main(int argc, char *argv[])
 	}
 
 	savebmp("scene.bmp",width,height,dpi,pixels);
+	delete pixels;
+	t2 = clock();
+	float diff = ((float)t2 - (float)t1)/1000;
+
+	cout << diff << " seconds" << endl;
 	return 0;
 }

@@ -47,7 +47,7 @@ class Plane : public Object{
 Plane::Plane(){
 	normal = Vect (1,0,0);
 	distance = 0.0;
-	color = Color (0.5,0.5,0.5,0.0);
+	color = Color (0.5,0.5,0.5,0);
 }
 
 Plane::Plane( Vect normalValue, double distanceValue, Color colorValue){

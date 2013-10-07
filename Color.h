@@ -25,23 +25,23 @@ class Color{
 	double setColorSpecial(double specialValue) { special = specialValue; }
 
 	double brightness(){
-		return (red + blue + green)/3;
+		return (red + green + blue)/3;
 	}
 
 	Color colorScalar(double scalar){
-		return Color (red*scalar, blue*scalar, green*scalar, special);
+		return Color (red*scalar, green*scalar, blue*scalar, special);
 	}
 
 	Color colorAdd(Color color){
-		return Color (red + color.getColorRed(), blue + color.getColorBlue(), green + getColorGreen(), special);
+		return Color (red + color.getColorRed(), green + color.getColorGreen(), blue + color.getColorBlue(), special);
 	}
 
 	Color colorMultiply(Color color){
-		return Color (red * color.getColorRed(), blue * color.getColorBlue(), green * getColorGreen(), special);
+		return Color (red * color.getColorRed(), green * color.getColorGreen(), blue * color.getColorBlue(), special);
 	}
 
 	Color colorAverage(Color color){
-		((red + color.getColorRed())/2, (blue + color.getColorBlue())/2, (green + getColorGreen())/2, special);
+		return Color ((red + color.getColorRed())/2, (green + color.getColorGreen())/2, (blue + color.getColorBlue())/2, special);
 	}
 
 	Color clip(){

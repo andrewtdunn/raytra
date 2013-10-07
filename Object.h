@@ -2,7 +2,6 @@
 #define _OBJECT_H
 
 #include "Ray.h"
-#include "math.h"
 #include "Vect.h"
 #include "Color.h"
 
@@ -12,10 +11,8 @@ class Object{
 
 	Object ();
 
-	Object (Vect, double, Color);
-
 	// method functions
-	virtual Color getColor () { return Color(0.0,0.0,0.0,0.0); }
+	virtual Color getColor () { return Color(0.0,0.0,0.0,0); }
 
 	virtual Vect getNormalAt(Vect intersection_position){
 		return Vect(0,0,0); // normal of a null object...
