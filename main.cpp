@@ -20,6 +20,7 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "Triangle.h"
+#include "Cylinder.h"
 
 
 
@@ -328,7 +329,7 @@ int main(int argc, char *argv[])
 	int n = width * height;
 	RGBType *pixels = new RGBType[n];
 
-	int aadepth = 7	;
+	int aadepth = 2	;
 	double aathreshold = 0.1;
 	double aspectRatio = (double)width/(double)height;
 	double ambientLight = 0.2;
@@ -367,7 +368,7 @@ int main(int argc, char *argv[])
 
 	// scene objects
 	Sphere scene_sphere (O, 1, pretty_green);
-	Sphere scene_sphere2 (new_sphere_location, 0.5, maroon);
+	Cylinder scene_sphere2 (O, 0.5, 4,  maroon);
 	Plane scene_plane (Y, -1, tile_floor);
 	Triangle scene_triangle( Vect(3,0,0),
 							 Vect(0,3,0),
@@ -380,7 +381,7 @@ int main(int argc, char *argv[])
 	scene_objects.push_back(dynamic_cast<Object*>(&scene_plane));
 	//scene_objects.push_back(dynamic_cast<Object*>(&scene_triangle));
 
-	makeCube( Vect( 1 , 1, 1 ), Vect( -1, -1, -1), orange );
+	//makeCube( Vect( 1 , 1, 1 ), Vect( -1, -1, -1), orange );
 
 
 	int thisone, aa_index;
