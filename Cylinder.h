@@ -9,18 +9,19 @@
 class Cylinder : public Object{
 
 	Vect center;
-	double radius, height;
+	double baseRadius, capRadius, height;
 	Color color;
 
 	public:
 
 	Cylinder ();
 
-	Cylinder (Vect, double, double, Color);
+	Cylinder (Vect, double, double, double, Color);
 
 	// method functions
 	Vect getCylinderCenter () { return center; }
-	double getCylinderRadius () { return radius; }
+	double getCylinderBaseRadius () { return baseRadius; }
+	double getCylinderCapRadius () { return capRadius; }
 	double getCylinderHeight () {return height; }
 	virtual Color getColor () { return color; }
 
@@ -41,19 +42,20 @@ class Cylinder : public Object{
 		double ray_direction_y = ray_direction.getVectY();
 		double ray_direction_z = ray_direction.getVectZ();
 
-		Vect Cylinder_center = center;
-		double Cylinder_center_x = Cylinder_center.getVectX();
-		double Cylinder_center_y = Cylinder_center.getVectY();
-		double Cylinder_center_z = Cylinder_center.getVectZ();
+		// if z is less than 0 or more than height return -1 
 
 		
+		// test if ray hits outer wall
 
-		double a = pow(ray_direction_x,2) + pow(ray_direction_y,2);	
-		double b = 2 * (ray_origin_x*ray_direction_x + ray_origin_y * ray_direction_y);	 
+		double d = (capRadius - baseRadius) * ray_direction_x;
+		double F = baseRadius + (capRadius - baseRadius) * ray_origin_z;
 
-		double c = pow(ray_origin_x, 2) + pow(ray_origin_y, 2) - (radius*radius);
+		double a = pow(ray_direction_x,2) + pow(ray_direction_y,2) - pow(d,2);	
+		double b = (ray_origin_x*ray_direction_x + ray_origin_y * ray_direction_y) - F * d;	 
 
-		double discriminant = b*b - 4*a*c;
+		double c = pow(ray_origin_x, 2) + pow(ray_origin_y, 2) - F*F;
+
+		double discriminant = pow(2*b,2) - 4*a*c;
 
 		if (discriminant > 0){
 			// the ray intersects the Cylinder
@@ -83,14 +85,16 @@ class Cylinder : public Object{
 
 Cylinder::Cylinder(){
 	center = Vect (0,0,0);
-	radius = 1.0;
-	height = 2.0;
+	baseRadius = 1.0;
+	capRadius = 0.5;
+	height = 1.0;
 	color = Color (0.5,0.5,0.5,0.0);
 }
 
-Cylinder::Cylinder( Vect centerValue, double radiusValue, double heightValue, Color colorValue){
+Cylinder::Cylinder( Vect centerValue, double baseRadiusValue, double capRadiusValue, double heightValue, Color colorValue){
 	center = centerValue;
-	radius = radiusValue;
+	baseRadius = baseRadiusValue;
+	capRadius = capRadiusValue;
 	height = heightValue;
 	color = colorValue;
 }

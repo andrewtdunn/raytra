@@ -354,7 +354,10 @@ int main(int argc, char *argv[])
 	Camera scene_cam (campos, camdir, camright, camdown);
 
 	Color white_light (1.0, 1.0, 1.0, 0);
+	Color pretty_white (1.0, 1.0, 1.0, 0.3);
 	Color pretty_green (0.5, 1.0, 0.5, 0.3);
+	Color pretty_red (1.0, 0.5, 0.5, 0.3);
+	Color pretty_blue (0.5, 0.5, 1.0, 0.3);
 	Color maroon (0.5, 0.25, 0.25, 0.95);
 	Color tile_floor(1,1,1,2);
 	Color gray (0.5, 0.5, 0.5, 0);
@@ -366,23 +369,122 @@ int main(int argc, char *argv[])
 	vector<Source*> light_sources;
 	light_sources.push_back(dynamic_cast<Source*>(&scene_light));
 
-	// scene objects
-	Sphere scene_sphere (O, 1, pretty_green);
-	Cylinder scene_sphere2 (O, 0.5, 4,  maroon);
-	Plane scene_plane (Y, -1, tile_floor);
+
+	// read object description from file, generate objects 
+	// and add to the scene... 
+
+	// file line is of format /objtype/ /x/ /y/ /z/ /radius/ /color/
+
+	// basic scene plane
+	Plane scene_plane (Y, 0, tile_floor);
+	scene_objects.push_back(dynamic_cast<Object*>(&scene_plane));
+
+	// basis vector indicators
+	/*
+	Sphere oball (O, .1, pretty_white);
+	Sphere xball (X, .1, pretty_red);
+	Sphere yball (Y, .1, pretty_green);
+	Sphere zball (Z, .1, pretty_blue);
+	scene_objects.push_back(dynamic_cast<Object*>(&oball));
+	scene_objects.push_back(dynamic_cast<Object*>(&xball));
+	scene_objects.push_back(dynamic_cast<Object*>(&yball));
+	scene_objects.push_back(dynamic_cast<Object*>(&zball));
+	*/
+
+	cout << "input file: " << argv[1] << endl;
+
+	string line;
+	ifstream myfile (argv[1]);
+
+	//scene_objects.push_back(dynamic_cast<Object*>(&zball));
+	
+
+	if (myfile.is_open())
+	{
+		while ( getline (myfile,line) )
+		{
+
+			string arr[10];
+			int i = 0;
+			cout << line << endl;
+			
+			stringstream ssin(line);
+			while (ssin.good() && i < 10){
+				ssin >> arr[i];
+				++i;
+			}
+
+			if (arr[0] == "sphere")
+			{
+				//cout << " - - - - - - " << endl;
+				cout << "sphere found" << endl;
+				Vect * newVect = new Vect( atof(arr[1].c_str()), atof(arr[2].c_str()), atof(arr[3].c_str()) );
+				double radius = atof(arr[4].c_str());
+				//cout << "radius: " << radius << endl;
+
+
+
+				double redColor = atof(arr[5].c_str());
+				double greenColor = atof(arr[6].c_str());
+				double blueColor = atof(arr[7].c_str());
+
+				cout << "red: " << redColor << endl;
+				cout << "green: " << greenColor << endl;
+				cout << "blue: " << blueColor << endl;
+				//cout << " - - - - - " << endl;
+
+				Color * newColor = new Color( atof(arr[5].c_str()), atof(arr[6].c_str()), atof(arr[7].c_str()), atof(arr[8].c_str()) );
+
+				//Sphere testBall ( testVect, atof(argv[6]), pretty_green);
+				/*
+				cout << double(arr[5]) << endl;
+				double radius = double(arr[5]);
+				cout << "radius: " << radius << endl;
+				*/
+
+				//Sphere zball (&testVect, 1.0, pretty_blue);
+
+				
+
+				scene_objects.push_back( new Sphere (*newVect, radius , *newColor) );
+				//cout << "sphere added" << endl;
+
+			}
+			
+			for (i = 1; i < 7; i++){
+				cout << i+1 << " " <<  arr[i] << endl;
+
+			}
+			
+			
+			
+		}	
+		
+		myfile.close();	
+
+	}
+	
+	//Sphere scene_sphere (O, 1, pretty_green);
+	//Cylinder scene_cylinder (O, 1.0, 1.5, 0.25, orange);
+	/*
 	Triangle scene_triangle( Vect(3,0,0),
 							 Vect(0,3,0),
 							 Vect(0,0,3), orange);
+	*/
 
 
-	
+	/*
+
 	//scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere));
-	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere2));
-	scene_objects.push_back(dynamic_cast<Object*>(&scene_plane));
+
+	*/
+
+	//scene_objects.push_back(dynamic_cast<Object*>(&scene_cylinder));
+	
 	//scene_objects.push_back(dynamic_cast<Object*>(&scene_triangle));
 
 	//makeCube( Vect( 1 , 1, 1 ), Vect( -1, -1, -1), orange );
-
+	
 
 	int thisone, aa_index;
 	double xamnt, yamnt;
